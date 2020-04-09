@@ -29,4 +29,5 @@ RUN apt-get install libxft2 -y
 RUN apt-get update && apt-get install -y python3-pip python3-dev
 RUN pip3 install setuptools pip --upgrade --force-reinstall
 COPY ./src/ /app/src
+COPY listen.py /app/listen.py
 RUN mv /app/src/* /app/ && rm -rf /app/src
