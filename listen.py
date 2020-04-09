@@ -7,6 +7,10 @@ import logging
 import sys
 import json
 import time
+import threading
+import socket
+from socketserver import ThreadingMixIn
+
 
 class CommandRequestHandler(BaseHTTPRequestHandler):
     def _set_headers(self):
@@ -42,6 +46,9 @@ class CommandRequestHandler(BaseHTTPRequestHandler):
         print("sending over", result_dict)
         self.wfile.write(json.dumps(result_dict).encode())
 
+
+class ThreadingSimpleServer(ThreadingMixIn, HTTPServer):
+    pass
 
 
 def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler):
@@ -166,7 +173,28 @@ def log_critical(msg):
     logging.critical(msg)
 
 
+# from https://stackoverflow.com/questions/14088294/multithreaded-web-server-in-python
+class ListenerThread(threading.Thread):
+
+    def __init__(self, index):
+        threading.Thread.__init__(self)
+        self.index = index
+        self.daemon = True
+        self.start()
+
+    def run(self):
+
+        httpd = HTTPServer(addr, CommandRequestHandler, False)
+
+        # prevent the http server from re-binding every handler
+        httpd.socket = sock
+        httpd.server_bind = self.server_close = lambda self: None
+
+        httpd.serve_forever()
+
 if __name__ == '__main__':
     setup_logging()
     log_info("Started listening")
-    run(handler_class=CommandRequestHandler)
+    # run(handler_class=CommandRequestHandler)
+    run(server_class=ThreadingSimpleServer, handler_class=CommandRequestHandler)
+
