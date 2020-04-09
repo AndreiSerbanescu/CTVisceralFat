@@ -4,9 +4,7 @@ from http.server import *
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
 import logging
-# import sys
-# import SimpleITK as sitk
-import numpy as np
+import sys
 import json
 import time
 
@@ -63,6 +61,8 @@ def mark_yourself_ready():
     sb.call([cmd], shell=True)
 
 
+# TODO refactoring
+
 # PRE: for nifti files source_files=/path/to/volume.nii.gz
 def visceral_fat_measure_nifti(param_dict):
 
@@ -84,7 +84,7 @@ def visceral_fat_measure_nifti(param_dict):
 
     print(report_fn)
 
-    new_report_name = "ct_fat_FatReport_" + source_file_name + "_" + time.time() + ".txt"
+    new_report_name = "ct_fat_FatReport_" + source_file_name + "_" + str(time.time()) + ".txt"
     new_report_path = os.path.join(data_share, new_report_name)
     mv_command = "mv {} {}".format(report_fn, new_report_path)
     sb.call([mv_command], shell=True)
@@ -94,7 +94,7 @@ def visceral_fat_measure_nifti(param_dict):
     return result_dict
 
 # PRE: for dcm files   source_file=/path/to/dir
-def visceral_fat_measure_nifti(param_dict):
+def visceral_fat_measure_dcm(param_dict):
 
     # because of a bug in generating the report in CTVisceralFat
     # need to run NIH_FatMeasurement, the -d argument
@@ -109,12 +109,14 @@ def visceral_fat_measure_nifti(param_dict):
     source_file = os.path.join(data_share, rel_source_file)
 
     cp_cmd = "cp -r {} /tmp/".format(source_file)
+    print("running {}".format(cp_cmd))
     sb.call([cp_cmd], shell=True)
 
     dir_name = os.path.split(rel_source_file)[1]
 
     visc_fat_command = "cd /tmp && /app/NIH_FatMeasurement --nogui -d {}".format(dir_name)
 
+    print("running {}".format(visc_fat_command))
     sb.call([visc_fat_command], shell=True)
 
 
@@ -123,9 +125,11 @@ def visceral_fat_measure_nifti(param_dict):
 
     print(report_fn)
 
-    new_report_name = "ct_fat_FatReport_" + dir_name + "_" + time.time() + ".txt"
+    new_report_name = "ct_fat_FatReport_" + dir_name + "_" + str(time.time()) + ".txt"
     new_report_path = os.path.join(data_share, new_report_name)
     mv_command = "mv {} {}".format(report_fn, new_report_path)
+
+    print("running {}".format(mv_command))
     sb.call([mv_command], shell=True)
 
     result_dict = {"fat_report": new_report_path}
