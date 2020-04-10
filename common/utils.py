@@ -27,21 +27,26 @@ def mark_yourself_ready():
     logging.info("Marking as ready")
     sb.call([cmd], shell=True)
 
-def log_info(msg):
-    logging.info(msg)
+def log_info(*msg):
+    logging.info(__get_print_statement(*msg))
 
 def log_debug(*msgs):
     logging.debug(__get_print_statement(*msgs))
 
+def log_critica(*msg):
+    logging.critical(__get_print_statement(*msg))
+
+def log_warning(*msg):
+    logging.warning(__get_print_statement(*msg))
+
+def log_critical(*msg):
+    logging.critical(__get_print_statement(*msg))
 
 def __get_print_statement(*msgs):
+    if type(msgs) == str:
+        return msgs
+
     print_statement = ""
     for msg in msgs:
         print_statement = print_statement + str(msg) + " "
     return print_statement
-
-def log_warning(msg):
-    logging.warning(msg)
-
-def log_critical(msg):
-    logging.critical(msg)

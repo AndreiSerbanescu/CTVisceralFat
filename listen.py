@@ -1,6 +1,6 @@
 from common.utils import *
-import time
 from common import listener_server
+import time
 import os
 import subprocess as sb
 
@@ -81,8 +81,7 @@ if __name__ == '__main__':
 
     setup_logging()
     log_info("Started listening")
-    # run(handler_class=CommandRequestHandler)
-    # run(server_class=ThreadingSimpleServer, handler_class=CommandRequestHandler)
+
     served_requests = {
         "/ct_visceral_fat_dcm": visceral_fat_measure_dcm,
         "/ct_visceral_fat_nifti": visceral_fat_measure_nifti
