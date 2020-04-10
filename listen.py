@@ -1,74 +1,7 @@
-import subprocess as sb
-import os
-from http.server import *
-from urllib.parse import urlparse
-from urllib.parse import parse_qs
-import logging
-import sys
-import json
+from utils import *
 import time
-import threading
-import socket
-from socketserver import ThreadingMixIn
-
-
-class CommandRequestHandler(BaseHTTPRequestHandler):
-    def _set_headers(self):
-        self.send_response(200)
-        self.send_header("Content-type", "text")
-        self.end_headers()
-
-        self.__requested_method = {
-            "/ct_visceral_fat_dcm": visceral_fat_measure_dcm,
-            "/ct_visceral_fat_nifti": visceral_fat_measure_nifti
-        }
-
-
-    def do_GET(self):
-        self._set_headers()
-        self.__handle_request()
-
-    def __handle_request(self):
-        parsed_url = urlparse(self.path)
-        parsed_params = parse_qs(parsed_url.query)
-
-        log_debug("Got request with url {} and params {}".format(parsed_url.path, parsed_params))
-
-        if parsed_url.path not in self.__requested_method:
-            log_debug("unkown request {} received".format(self.path))
-            return
-
-
-        print("running CT Muscle Segmenter")
-        result_dict = self.__requested_method[parsed_url.path](parsed_params)
-        print("result", result_dict)
-
-        print("sending over", result_dict)
-        self.wfile.write(json.dumps(result_dict).encode())
-
-
-class ThreadingSimpleServer(ThreadingMixIn, HTTPServer):
-    pass
-
-
-def run(server_class=HTTPServer, handler_class=BaseHTTPRequestHandler):
-    server_address = ('', 8000)
-    httpd = server_class(server_address, handler_class)
-
-    mark_yourself_ready()
-    httpd.serve_forever()
-
-
-def mark_yourself_ready():
-    hostname = os.environ['HOSTNAME']
-    data_share_path = os.environ['DATA_SHARE_PATH']
-    cmd = "touch {}/{}_ready.txt".format(data_share_path, hostname)
-
-    logging.info("Marking as ready")
-    sb.call([cmd], shell=True)
-
-
-# TODO refactoring
+import listener_server
+import os
 
 # PRE: for nifti files source_files=/path/to/volume.nii.gz
 def visceral_fat_measure_nifti(param_dict):
@@ -126,7 +59,6 @@ def visceral_fat_measure_dcm(param_dict):
     print("running {}".format(visc_fat_command))
     sb.call([visc_fat_command], shell=True)
 
-
     report_name = "FatReport_" + dir_name + ".txt"
     report_fn   = os.path.join("/tmp", report_name)
 
@@ -144,57 +76,16 @@ def visceral_fat_measure_dcm(param_dict):
     return result_dict
 
 
-def setup_logging():
-    file_handler = logging.FileHandler("log.log")
-    stream_handler = logging.StreamHandler(sys.stdout)
-
-    file_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
-    stream_handler.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
-
-    logging.basicConfig(
-        level=logging.DEBUG, # TODO level=get_logging_level(),
-        # format="%(asctime)s [%(levelname)s] %(message)s",
-        handlers=[
-            file_handler,
-            stream_handler
-        ]
-    )
-
-def log_info(msg):
-    logging.info(msg)
-
-def log_debug(msg):
-    logging.debug(msg)
-
-def log_warning(msg):
-    logging.warning(msg)
-
-def log_critical(msg):
-    logging.critical(msg)
-
-
-# from https://stackoverflow.com/questions/14088294/multithreaded-web-server-in-python
-class ListenerThread(threading.Thread):
-
-    def __init__(self, index):
-        threading.Thread.__init__(self)
-        self.index = index
-        self.daemon = True
-        self.start()
-
-    def run(self):
-
-        httpd = HTTPServer(addr, CommandRequestHandler, False)
-
-        # prevent the http server from re-binding every handler
-        httpd.socket = sock
-        httpd.server_bind = self.server_close = lambda self: None
-
-        httpd.serve_forever()
-
 if __name__ == '__main__':
+
     setup_logging()
     log_info("Started listening")
     # run(handler_class=CommandRequestHandler)
-    run(server_class=ThreadingSimpleServer, handler_class=CommandRequestHandler)
+    # run(server_class=ThreadingSimpleServer, handler_class=CommandRequestHandler)
+    served_requests = {
+        "/ct_visceral_fat_dcm": visceral_fat_measure_dcm,
+        "/ct_visceral_fat_nifti": visceral_fat_measure_nifti
+    }
+
+    listener_server.start_listening(served_requests, multithreaded=True, mark_as_ready_callback=mark_yourself_ready)
 
