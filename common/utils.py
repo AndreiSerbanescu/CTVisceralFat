@@ -4,7 +4,7 @@ import os
 import subprocess as sb
 
 def setup_logging():
-    file_handler = logging.FileHandler("log.log")
+    file_handler = logging.FileHandler("../log.log")
     stream_handler = logging.StreamHandler(sys.stdout)
 
     file_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))

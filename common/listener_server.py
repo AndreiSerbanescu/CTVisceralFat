@@ -1,7 +1,7 @@
 from http.server import *
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
-from utils import *
+from common.utils import *
 from socketserver import ThreadingMixIn
 import json
 from functools import partial
