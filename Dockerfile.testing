@@ -28,10 +28,16 @@ RUN apt-get install libxft2 -y
 # install python3
 RUN apt-get update && apt-get install -y python3-pip python3-dev
 RUN pip3 install setuptools pip --upgrade --force-reinstall
+
+
+RUN pip3 install pytest
+RUN pip3 install mock
+
+
 COPY ./src/ /app/src
 COPY listen.py /app/listen.py
 RUN mkdir /app/common
 COPY common/* /app/common/
 RUN mv /app/src/* /app/ && rm -rf /app/src
 
-COPY test.py /app/test.py
+COPY test /app/test

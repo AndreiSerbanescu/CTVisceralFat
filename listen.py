@@ -15,7 +15,10 @@ def visceral_fat_measure_nifti(param_dict):
 
     visc_fat_command = "cd  /app && ./NIH_FatMeasurement --nogui -d {}".format(source_file)
 
-    sb.call([visc_fat_command], shell=True)
+    exit_code_fat_measure = sb.call([visc_fat_command], shell=True)
+
+    if exit_code_fat_measure == 1:
+        return {}, False
 
     volume_name = os.path.split(source_file)[1]
     source_file_name =  volume_name[:len(volume_name) - 7] #remove .nii.gz
@@ -28,11 +31,15 @@ def visceral_fat_measure_nifti(param_dict):
     new_report_name = "ct_fat_FatReport_" + source_file_name + "_" + str(time.time()) + ".txt"
     new_report_path = os.path.join(data_share, new_report_name)
     mv_command = "mv {} {}".format(report_fn, new_report_path)
-    sb.call([mv_command], shell=True)
+
+    exit_code_mv = sb.call([mv_command], shell=True)
+
+    if exit_code_mv == 1:
+        return {}, False
 
     result_dict = {"fat_report": new_report_path}
 
-    return result_dict
+    return result_dict, True
 
 # PRE: for dcm files   source_file=/path/to/dir
 def visceral_fat_measure_dcm(param_dict):
@@ -51,14 +58,21 @@ def visceral_fat_measure_dcm(param_dict):
 
     cp_cmd = "cp -r {} /tmp/".format(source_file)
     print("running {}".format(cp_cmd))
-    sb.call([cp_cmd], shell=True)
+    exit_code_cp = sb.call([cp_cmd], shell=True)
+
+    if exit_code_cp == 1:
+        return {}, False
+
 
     dir_name = os.path.split(rel_source_file)[1]
 
     visc_fat_command = "cd /tmp && /app/NIH_FatMeasurement --nogui -d {}".format(dir_name)
 
     print("running {}".format(visc_fat_command))
-    sb.call([visc_fat_command], shell=True)
+    exit_code_fat_measure = sb.call([visc_fat_command], shell=True)
+
+    if exit_code_fat_measure == 1:
+        return {}, False
 
     report_name = "FatReport_" + dir_name + ".txt"
     report_fn   = os.path.join("/tmp", report_name)
@@ -70,11 +84,15 @@ def visceral_fat_measure_dcm(param_dict):
     mv_command = "mv {} {}".format(report_fn, new_report_path)
 
     print("running {}".format(mv_command))
-    sb.call([mv_command], shell=True)
+
+    exit_code_mv = sb.call([mv_command], shell=True)
+
+    if exit_code_mv == 1:
+        return {}, False
 
     result_dict = {"fat_report": new_report_path}
 
-    return result_dict
+    return result_dict, True
 
 
 if __name__ == '__main__':
