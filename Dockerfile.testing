@@ -33,11 +33,14 @@ RUN pip3 install setuptools pip --upgrade --force-reinstall
 RUN pip3 install pytest
 RUN pip3 install mock
 
+RUN pip3 install simpleitk
+RUN pip3 install numpy
 
 COPY ./src/ /app/src
 COPY listen.py /app/listen.py
 RUN mkdir /app/common
 COPY common/* /app/common/
+COPY volume_splitter.py /app/volume_splitter.py
 RUN mv /app/src/* /app/ && rm -rf /app/src
 
 COPY test /app/test

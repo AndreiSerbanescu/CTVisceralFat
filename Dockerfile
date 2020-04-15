@@ -32,4 +32,5 @@ COPY ./src/ /app/src
 COPY listen.py /app/listen.py
 RUN mkdir /app/common
 COPY common/* /app/common/
+COPY volume_splitter.py /app/volume_splitter.py
 RUN mv /app/src/* /app/ && rm -rf /app/src
