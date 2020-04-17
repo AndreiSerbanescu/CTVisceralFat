@@ -14,13 +14,19 @@ def visceral_fat_measure_nifti(param_dict):
 
     rel_source_file = param_dict["source_file"][0]
 
+    # remove trailing / at the beggining of name
+    # otherwise os.path.join has unwanted behaviour for base dirs
+    # i.e. join(/app/data_share, /app/wrongpath) = /app/wrongpath
+    rel_source_file = rel_source_file.lstrip('/')
+
     source_file = os.path.join(data_share, rel_source_file)
+
 
     # volume_splitter = Splitter("/tmp")
     # sub_volume_fns = volume_splitter.split(source_file, 4)
 
 
-    report_paths = []
+    # report_paths = []
     # for sub_volume_fn in sub_volume_fns:
     #     report_path, success = __visceral_fat_measure_nifti_single(sub_volume_fn)
     #     report_paths.append(report_paths)
@@ -41,6 +47,7 @@ def visceral_fat_measure_nifti(param_dict):
     #
     # report_path = None
 
+    log_debug("### source file", source_file)
     report_path, success = __visceral_fat_measure_nifti_single(source_file)
 
 
@@ -52,6 +59,8 @@ def __visceral_fat_measure_nifti_single(source_file):
     visc_fat_command = "cd  /app && ./NIH_FatMeasurement --nogui -d {}".format(source_file)
 
     data_share = os.environ["DATA_SHARE_PATH"]
+
+    log_debug("Calling", visc_fat_command)
     exit_code_fat_measure = sb.call([visc_fat_command], shell=True)
 
     if exit_code_fat_measure == 1:
@@ -74,7 +83,7 @@ def __visceral_fat_measure_nifti_single(source_file):
     if exit_code_mv == 1:
         return None, False
 
-    return new_report_path, True
+    return new_report_name, True
 
 # PRE: for dcm files   source_file=/path/to/dir
 def visceral_fat_measure_dcm(param_dict):
