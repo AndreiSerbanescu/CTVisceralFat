@@ -25,6 +25,10 @@ RUN apt-get install libxcursor1 -y
 RUN apt-get install libxinerama1 -y
 RUN apt-get install libxft2 -y
 
+# Possibly needed for splitting the volume
+#RUN pip3 install simpleitk
+#RUN pip3 install numpy
+
 # install python3
 RUN apt-get update && apt-get install -y python3-pip python3-dev
 RUN pip3 install setuptools pip --upgrade --force-reinstall

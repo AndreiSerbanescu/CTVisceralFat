@@ -3,8 +3,6 @@ from common import listener_server
 import time
 import os
 import subprocess as sb
-from volume_splitter import Splitter
-from threading import Thread
 
 # PRE: for nifti files source_files=/path/to/volume.nii.gz
 def visceral_fat_measure_nifti(param_dict):
