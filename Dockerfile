@@ -39,12 +39,4 @@ COPY files/source/ /app/
 RUN mkdir /app/data_share
 ENV DATA_SHARE_PATH /app/data_share
 
-CMD ["python3","-u","/app/run_container_jit.py"]
-
-
-#COPY ./src/ /app/src
-#COPY listen.py /app/listen.py
-#RUN mkdir /app/common
-#COPY common/* /app/common/
-#COPY volume_splitter.py /app/volume_splitter.py
-#RUN mv /app/src/* /app/ && rm -rf /app/src
+CMD ["python3","-u","/app/run_container_jip.py"]
