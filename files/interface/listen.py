@@ -19,41 +19,15 @@ def visceral_fat_measure_nifti(param_dict):
 
     source_file = os.path.join(data_share, rel_source_file)
 
-
-    # volume_splitter = Splitter("/tmp")
-    # sub_volume_fns = volume_splitter.split(source_file, 4)
-
-
-    # report_paths = []
-    # for sub_volume_fn in sub_volume_fns:
-    #     report_path, success = __visceral_fat_measure_nifti_single(sub_volume_fn)
-    #     report_paths.append(report_paths)
-    #
-    #     if not success:
-    #         return {}, False
-
-    # threads = []
-    # for sub_volume_fn in sub_volume_fns:
-    #
-    #     thread = Thread(target=__visceral_fat_measure_nifti_single, args=(sub_volume_fn,))
-    #     threads.append(thread)
-    #     thread.start()
-    #
-    # for thread in threads:
-    #     thread.join()
-    #
-    #
-    # report_path = None
-
     log_debug("### source file", source_file)
-    report_path, success = __visceral_fat_measure_nifti_single(source_file)
+    report_path, success = visceral_fat_measure_nifti_single(source_file)
 
 
     result_dict = {"fat_report": report_path}
 
     return result_dict, success
 
-def __visceral_fat_measure_nifti_single(source_file):
+def visceral_fat_measure_nifti_single(source_file):
     visc_fat_command = "cd  /app && ./NIH_FatMeasurement --nogui -d {}".format(source_file)
 
     data_share = os.environ["DATA_SHARE_PATH"]

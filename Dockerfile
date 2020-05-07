@@ -32,9 +32,19 @@ RUN apt-get install libxft2 -y
 # install python3
 RUN apt-get update && apt-get install -y python3-pip python3-dev
 RUN pip3 install setuptools pip --upgrade --force-reinstall
-COPY ./src/ /app/src
-COPY listen.py /app/listen.py
-RUN mkdir /app/common
-COPY common/* /app/common/
-COPY volume_splitter.py /app/volume_splitter.py
-RUN mv /app/src/* /app/ && rm -rf /app/src
+
+COPY files/interface/ /app/
+COPY files/source/ /app/
+
+RUN mkdir /app/data_share
+ENV DATA_SHARE_PATH /app/data_share
+
+CMD ["python3","-u","/app/run_container_jit.py"]
+
+
+#COPY ./src/ /app/src
+#COPY listen.py /app/listen.py
+#RUN mkdir /app/common
+#COPY common/* /app/common/
+#COPY volume_splitter.py /app/volume_splitter.py
+#RUN mv /app/src/* /app/ && rm -rf /app/src
