@@ -3,6 +3,9 @@ from common import listener_server
 import time
 import os
 import subprocess as sb
+from common import utils
+import shutil
+import os
 
 # PRE: for nifti files source_files=/path/to/volume.nii.gz
 def visceral_fat_measure_nifti(param_dict):
@@ -27,8 +30,24 @@ def visceral_fat_measure_nifti(param_dict):
 
     return result_dict, success
 
+def __create_tmp_out_dir():
+
+    unique_id = utils.get_unique_id()
+    tmp_dir = os.path.join("/tmp", f"output-{unique_id}")
+
+    if os.path.exists(tmp_dir):
+        log_debug(f"tmp output directory exists, removing - {tmp_dir}")
+        shutil.rmtree(tmp_dir)
+
+    os.makedirs(tmp_dir)
+
+    return tmp_dir
+
 def visceral_fat_measure_nifti_single(source_file):
-    visc_fat_command = "cd  /app && ./NIH_FatMeasurement --nogui -d {}".format(source_file)
+
+    tmp_output_dir = __create_tmp_out_dir()
+
+    visc_fat_command = f"cd {tmp_output_dir} && /app/NIH_FatMeasurement --nogui -d {source_file}"
 
     data_share = os.environ["DATA_SHARE_PATH"]
 
@@ -42,15 +61,15 @@ def visceral_fat_measure_nifti_single(source_file):
     source_file_name = volume_name[:len(volume_name) - 7]  # remove .nii.gz
 
     report_name = "FatReport_" + volume_name + ".txt"
-    report_fn = os.path.join("/app", report_name)
+    report_fn = os.path.join(tmp_output_dir, report_name)
 
-    print(report_fn)
-
-    new_report_name = "ct_fat_FatReport_" + source_file_name + "_" + str(time.time()) + ".txt"
+    unique_id = utils.get_unique_id()
+    new_report_name = "ct_fat_FatReport_" + source_file_name + "_" + unique_id + ".txt"
     new_report_path = os.path.join(data_share, new_report_name)
     mv_command = "mv {} {}".format(report_fn, new_report_path)
-
     exit_code_mv = sb.call([mv_command], shell=True)
+
+    shutil.rmtree(tmp_output_dir)
 
     if exit_code_mv == 1:
         return None, False
